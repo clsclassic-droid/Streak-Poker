@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Odds Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #0f1635 100%);
+            font-family: 'Poppins', sans-serif;
+            color: #d4af37;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #d4af37;
+            margin-bottom: 0;
+            margin: 0;
+        }
+
+        .table-wrapper {
+            background: rgba(26, 31, 58, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid #d4af37;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.15);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+            border-bottom: 1px solid #d4af37;
+        }
+
+        th {
+            padding: 6px 4px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75em;
+            color: #d4af37;
+        }
+
+        th:first-child {
+            text-align: left;
+            color: #d4af37;
+        }
+
+        td {
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            text-align: center;
+            vertical-align: top;
+            color: #ffffff;
+            font-size: 0.85em;
+        }
+
+        td:first-child {
+            text-align: left;
+            vertical-align: middle;
+            min-width: 65px;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .stage-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .odds-cell {
+            color: #d4af37;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: block;
+            margin: 0;
+        }
+
+        .current-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .current-value {
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #ffffff;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .hit-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #0a0e27;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .progress {
+            background: rgba(212, 175, 55, 0.1);
+            height: 3px;
+            border-radius: 2px;
+            overflow: hidden;
+            width: 50px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .stats-text {
+            font-size: 0.65em;
+            color: #d4af37;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .stats-text:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .history-popup {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .history-item {
+            padding: 4px 0;
+            font-size: 0.8em;
+            color: #667eea;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .clear-history-btn {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.65em;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .btn-clear {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            padding: 10px 20px;
+            border: 1.5px solid rgba(231, 76, 60, 0.2);
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+        }
+
+        .btn-clear:hover {
+            background: rgba(231, 76, 60, 0.2);
+            transform: scale(1.05);
+        }
+
+        .category-name {
+            min-width: 65px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.9em;
+            color: #ffffff;
+        }
+
+        .played-category-btn {
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.65em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .played-category-btn:hover {
+            background: rgba(212, 175, 55, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Poker Odds Tracker</h1>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="tracker-table">
+                <thead>
+                    <tr>
+                        <th>ไพ่ที่ถือ</th>
+                        <th>Flop</th>
+                        <th>Turn</th>
+                        <th>River</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <button class="btn-clear" onclick="clearAllData()">Clear All Data</button>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            { id: 'hc_pair_flop', name: 'High Card → Pair', stage: 'Flop', odds: 3, group: 'hc_pair' },
+            { id: 'hc_pair_turn', name: 'High Card → Pair', stage: 'Turn', odds: 2.2, group: 'hc_pair' },
+            { id: 'hc_pair_river', name: 'High Card → Pair', stage: 'River', odds: 1.5, group: 'hc_pair' },
+            
+            { id: 'hc_2pair_flop', name: 'High Card → 2 Pair', stage: 'Flop', odds: 49, group: 'hc_2pair' },
+            { id: 'hc_2pair_turn', name: 'High Card → 2 Pair', stage: 'Turn', odds: 20, group: 'hc_2pair' },
+            { id: 'hc_2pair_river', name: 'High Card → 2 Pair', stage: 'River', odds: 12, group: 'hc_2pair' },
+            
+            { id: 'pp_set_flop', name: 'Pocket Pair → Set', stage: 'Flop', odds: 8.5, group: 'pp_set' },
+            { id: 'pp_set_turn', name: 'Pocket Pair → Set', stage: 'Turn', odds: 7, group: 'pp_set' },
+            { id: 'pp_set_river', name: 'Pocket Pair → Set', stage: 'River', odds: 6, group: 'pp_set' },
+            
+            { id: 'conn_str_flop', name: 'Connected → Straight', stage: 'Flop', odds: 76, group: 'conn_str' },
+            { id: 'conn_str_turn', name: 'Connected → Straight', stage: 'Turn', odds: 30, group: 'conn_str' },
+            { id: 'conn_str_river', name: 'Connected → Straight', stage: 'River', odds: 21, group: 'conn_str' },
+            
+            { id: 'suit_flush_flop', name: 'Suited → Flush', stage: 'Flop', odds: 119, group: 'suit_flush' },
+            { id: 'suit_flush_turn', name: 'Suited → Flush', stage: 'Turn', odds: 56, group: 'suit_flush' },
+            { id: 'suit_flush_river', name: 'Suited → Flush', stage: 'River', odds: 15, group: 'suit_flush' },
+        ];
+
+        let streaks = JSON.parse(localStorage.getItem('pokerStreaks') || '{}');
+        
+        categories.forEach(cat => {
+            if (!streaks[cat.id]) {
+                streaks[cat.id] = { current: 0, hits: 0, history: [], historyOpen: false };
+            } else if (!streaks[cat.id].historyOpen) {
+                streaks[cat.id].historyOpen = false;
+            }
+        });
+
+        function getProgressColor(current, odds) {
+            const pct = (current / odds) * 100;
+            if (pct >= 75) return '#27ae60';
+            if (pct >= 50) return '#f1c40f';
+            if (pct >= 25) return '#e67e22';
+            return '#e74c3c';
+        }
+
+        function renderTable() {
+            const groups = {
+                'hc_pair': categories.filter(c => c.group === 'hc_pair'),
+                'hc_2pair': categories.filter(c => c.group === 'hc_2pair'),
+                'pp_set': categories.filter(c => c.group === 'pp_set'),
+                'conn_str': categories.filter(c => c.group === 'conn_str'),
+                'suit_flush': categories.filter(c => c.group === 'suit_flush'),
+            };
+
+            let html = '';
+
+            Object.entries(groups).forEach(([groupKey, items]) => {
+                const categoryName = items[0].name;
+                const riverId = items[2].id;
+
+                html += `<tr>
+                    <td class="category-name">
+                        <span style="font-weight:600; display:block; margin-bottom:6px;">${categoryName}</span>
+                        <button class="played-category-btn" onclick="handlePlayedRiver('${riverId}')">Played</button>
+                    </td>`;
+                
+                // Render exactly 3 columns: Flop, Turn, River
+                for (let i = 0; i < 3; i++) {
+                    const cat = items[i];
+                    const data = streaks[cat.id];
+                    const pct = Math.min((data.current / cat.odds) * 100, 100);
+                    const color = getProgressColor(data.current, cat.odds);
+
+                    const totalAttempts = (data.history || []).length;
+                    const hits = data.hits || 0;
+                    const successRate = totalAttempts > 0 ? ((hits / totalAttempts) * 100).toFixed(0) : 0;
+                    const avgPlays = totalAttempts > 0 ? (data.history.reduce((a, b) => a + b, 0) / totalAttempts).toFixed(1) : 0;
+                    const compactStats = totalAttempts > 0 ? `${successRate}% · ${avgPlays}` : 'No data';
+
+                    html += `
+                    <td>
+                        <div class="stage-content">
+                            <span class="odds-cell">~ 1 ใน ${cat.odds}</span>
+                            
+                            <div class="current-row">
+                                <div class="current-value">${data.current}</div>
+                                <button class="hit-btn" onclick="handleHit('${cat.id}', '${cat.stage}', '${items[2].id}')">Hit</button>
+                            </div>
+                            
+                            <div class="progress">
+                                <div class="progress-fill" style="width: ${pct}%; background: ${color};"></div>
+                            </div>
+                            
+                            <div class="stats-text" onclick="toggleHistory('${cat.id}')">
+                                📋 ${compactStats}
+                            </div>
+
+                            ${totalAttempts > 0 ? `
+                            <div id="history-${cat.id}" style="display:${data.historyOpen ? 'block' : 'none'}; margin-top:8px; padding:8px; background:rgba(212,175,55,0.05); border-radius:6px; font-size:0.75em;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                    <span style="font-weight:600; color:#d4af37;">ประวัติ (${totalAttempts})</span>
+                                    <button class="clear-history-btn" onclick="clearHistory('${cat.id}')">ลบ</button>
+                                </div>
+                                <div style="max-height:120px; overflow-y:auto;">
+                                    ${[...(data.history || [])].reverse().slice(0, 10).map((plays, idx2) => `
+                                        <div class="history-item"># ${totalAttempts - idx2}: ${plays}</div>
+                                    `).join('')}
+                                </div>
+                                <div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(0,0,0,0.1); color:#3498db; font-weight:600;">
+                                    Current: ${data.current}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </td>
+                    `;
+                }
+
+                html += `</tr>`;
+            });
+
+            document.getElementById('table-body').innerHTML = html;
+        }
+
+        function handlePlayedSingle(id) {
+            streaks[id].current += 1;
+            saveData();
+        }
+
+        function handlePlayedRiver(id) {
+            const group = id.replace('_river', '');
+            const flopId = group + '_flop';
+            const turnId = group + '_turn';
+            const riverId = group + '_river';
+            
+            streaks[flopId].current += 1;
+            streaks[turnId].current += 1;
+            streaks[riverId].current += 1;
+            
+            saveData();
+        }
+
+        function handleHit(id, stage, groupRiverId) {
+            const group = id.replace('_' + stage.toLowerCase(), '');
+            const flopId = group + '_flop';
+            const turnId = group + '_turn';
+            const riverId = group + '_river';
+            
+            if (!streaks[flopId].history) streaks[flopId].history = [];
+            if (!streaks[turnId].history) streaks[turnId].history = [];
+            if (!streaks[riverId].history) streaks[riverId].history = [];
+            
+            streaks[id].history.push(streaks[id].current);
+            streaks[id].hits += 1;
+            
+            streaks[flopId].current = 0;
+            streaks[turnId].current = 0;
+            streaks[riverId].current = 0;
+            
+            saveData();
+        }
+
+        function toggleHistory(id) {
+            if (!streaks[id].historyOpen) {
+                streaks[id].historyOpen = true;
+            } else {
+                streaks[id].historyOpen = false;
+            }
+            localStorage.setItem('pokerStreaks', JSON.stringify(streaks));
+            renderTable();
+        }
+
+        function clearHistory(id) {
+            if (confirm('ลบประวัติ ' + id + '?')) {
+                streaks[id].history = [];
+                streaks[id].hits = 0;
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('pokerStreaks', JSON.stringify(streaks));
+            renderTable();
+        }
+
+        function clearAllData() {
+            if (confirm('ลบข้อมูลทั้งหมด? ไม่สามารถเรียกคืนได้')) {
+                localStorage.clear();
+                
+                streaks = {};
+                categories.forEach(cat => {
+                    streaks[cat.id] = { current: 0, hits: 0, history: [] };
+                });
+                
+                localStorage.setItem('pokerStreaks', JSON.stringify(streaks));
+                renderTable();
+                
+                alert('ลบข้อมูลแล้ว!');
+            }
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
